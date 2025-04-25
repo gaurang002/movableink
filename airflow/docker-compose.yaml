@@ -94,6 +94,8 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
@@ -188,8 +190,6 @@ services:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   airflow-triggerer:
     <<: *airflow-common
@@ -265,8 +265,8 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
-      _PIP_ADDITIONAL_REQUIREMENTS: 'apache-airflow-providers-postgres'
-    user: "${AIRFLOW_UID:-50000}:0"
+      _PIP_ADDITIONAL_REQUIREMENTS: ''
+    user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
 
@@ -306,14 +306,5 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-
-  airflow-python:
-    <<: *airflow-common
-    profiles:
-      - debug
-    environment:
-      <<: *airflow-common-env
-    user: "50000:0"
-    entrypoint: [ "/bin/bash", "-c" ]
 volumes:
   postgres-db-volume:
